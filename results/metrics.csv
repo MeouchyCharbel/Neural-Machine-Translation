@@ -1,0 +1,3 @@
+Model,BLEU,chrF
+Dictionary Baseline,0.54,15.52
+Transformer,57.97,71.93
