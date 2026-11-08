@@ -1,9 +1,13 @@
 
-transformers
 torch
+transformers
+datasets
+accelerate
+evaluate
 sentencepiece
 sacremoses
 sacrebleu
 pandas
-matplotlib
+numpy
 scikit-learn
+matplotlib

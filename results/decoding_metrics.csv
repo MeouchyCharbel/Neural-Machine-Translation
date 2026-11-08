@@ -1,0 +1,4 @@
+Configuration,BLEU,chrF,Total Time (s),Average Time (ms),Sentences/Second
+Greedy,55.11,70.4,76.34,152.67,6.55
+Beam Search 3,55.19,70.39,123.32,246.64,4.05
+Beam Search 5,54.87,70.12,214.1,428.21,2.34
