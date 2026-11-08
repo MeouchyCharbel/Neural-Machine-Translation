@@ -11,3 +11,4 @@ pandas
 numpy
 scikit-learn
 matplotlib
+gradio
