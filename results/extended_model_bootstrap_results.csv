@@ -1,5 +1,0 @@
-Comparison,Metric,Improvement,95% CI Lower,95% CI Upper,CI Excludes Zero
-Extended vs Original,BLEU,1.45,-0.413,3.188,False
-Extended vs Original,chrF,2.312,1.054,3.605,True
-Extended vs Pilot,BLEU,0.725,-0.819,2.4,False
-Extended vs Pilot,chrF,1.094,0.138,2.121,True
