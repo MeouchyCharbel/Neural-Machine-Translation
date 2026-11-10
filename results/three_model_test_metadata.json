@@ -1,0 +1,29 @@
+{
+  "dataset_url": "https://storage.googleapis.com/download.tensorflow.org/data/fra-eng.zip",
+  "original_pairs": 167130,
+  "cleaned_pairs": 166340,
+  "train_partition": 133017,
+  "validation_partition": 16616,
+  "test_partition": 16707,
+  "training_pairs_per_lstm": 50000,
+  "monitor_pairs": 1000,
+  "test_sentences": 2000,
+  "test_sample_random_state": 42,
+  "transformer_model": "Helsinki-NLP/opus-mt-en-fr",
+  "decoding": "greedy for all three models",
+  "config": {
+    "seed": 42,
+    "training_examples": 50000,
+    "monitor_examples": 1000,
+    "test_examples": 2000,
+    "epochs": 5,
+    "patience": 2,
+    "batch_size": 64,
+    "max_len": 48,
+    "vocab_size": 6000,
+    "embed_dim": 256,
+    "hidden_dim": 256,
+    "learning_rate": 0.001
+  },
+  "remarks": "LSTMs trained from scratch; MarianMT pretrained. Test scores are not an architecture-only comparison."
+}

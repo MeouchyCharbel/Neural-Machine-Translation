@@ -1,0 +1,4 @@
+Model,BLEU,chrF,Test sentences,Inference time (s)
+LSTM without attention,10.46,28.24,2000,1.43
+LSTM with attention,31.04,51.1,2000,2.91
+MarianMT pretrained Transformer,53.74,68.69,2000,35.07
