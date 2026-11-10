@@ -1,4 +1,0 @@
-Model,BLEU,chrF
-Original Pretrained,55.11,70.4
-Fine-tuned 100 Steps,55.84,71.62
-Extended Fine-tuned,56.56,72.71
