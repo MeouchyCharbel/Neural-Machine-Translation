@@ -1,9 +1,6 @@
 
 torch
 transformers
-datasets
-accelerate
-evaluate
 sentencepiece
 sacremoses
 sacrebleu
@@ -11,4 +8,3 @@ pandas
 numpy
 scikit-learn
 matplotlib
-gradio
