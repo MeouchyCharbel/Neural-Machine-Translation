@@ -41,8 +41,6 @@ Neural-Machine-Translation/
     ├── baseline_metrics.csv
     ├── decoding_metrics.csv
     ├── validation_predictions.csv
-    ├── lstm_comparison_metrics.csv
-    ├── lstm_comparison_predictions.csv
     ├── three_model_test_metrics.csv
     ├── three_model_test_predictions.csv
     ├── lstm_training_history.csv
