@@ -1,5 +1,0 @@
-Model,BLEU,chrF,Evaluation sentences
-Dictionary baseline,0.66,16.14,500
-TF-IDF retrieval,18.39,37.74,500
-Pretrained Transformer (greedy),55.11,70.4,500
-LSTM + attention (trained here),28.55,50.39,500
