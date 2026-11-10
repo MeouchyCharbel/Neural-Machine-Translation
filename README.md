@@ -1,280 +1,325 @@
-
 # Neural Machine Translation — English to French
 
 ## Project Overview
 
-This project investigates English-to-French Neural Machine Translation (NMT) using a pretrained Transformer model, traditional baselines, fine-tuning, and quantitative evaluation.
+This project investigates English-to-French Neural Machine Translation (NMT) by comparing a pretrained Transformer with an LSTM encoder–decoder model and two simpler translation baselines.
 
-The main objectives are to:
+The main objective is to evaluate the performance of different translation approaches using BLEU and chrF scores.
 
-1. Compare a simple dictionary baseline with a pretrained Transformer.
-2. Develop a stronger TF-IDF retrieval baseline.
-3. Prevent exact and normalized data leakage between dataset partitions.
-4. Compare greedy decoding and beam search.
-5. Fine-tune the pretrained Transformer.
-6. Evaluate the impact of fine-tuning using BLEU and chrF.
-7. Measure uncertainty using paired bootstrap confidence intervals.
-8. Test generalization on an external dataset.
+The project compares four methods:
 
-## Models
+1. Dictionary-based translation
+2. TF-IDF retrieval-based translation
+3. LSTM encoder–decoder with attention
+4. Pretrained Transformer (MarianMT)
 
-The main pretrained model is:
+All four methods are evaluated using the same 500 validation sentences to ensure a consistent comparison.
 
-`Helsinki-NLP/opus-mt-en-fr`
+## Project Objectives
 
-Three Transformer configurations were evaluated:
+- Prepare and clean an English–French parallel dataset.
+- Implement a simple dictionary translation baseline.
+- Implement a TF-IDF retrieval-based baseline.
+- Evaluate an existing pretrained Transformer.
+- Compare greedy decoding and beam search.
+- Build and train an LSTM encoder–decoder model with an attention mechanism.
+- Evaluate translation quality using BLEU and chrF.
+- Compare model predictions and analyze translation errors.
+- Identify the advantages and limitations of each translation approach.
 
-- Original pretrained Transformer
-- Fine-tuned Transformer after a 100-step pilot
-- Extended fine-tuned Transformer
+## Project Structure
 
-The final selected model is the extended fine-tuned checkpoint.
+The project consists of three Jupyter notebooks.
+
+### Notebook 01 — Data and Baseline
+
+**File:** `01_data_and_baseline.ipynb`
+
+This notebook:
+
+- Loads the English–French dataset.
+- Cleans and preprocesses the sentence pairs.
+- Implements a simple dictionary-based translator.
+- Loads the pretrained Transformer.
+- Generates French translations.
+- Evaluates translation quality using BLEU and chrF.
+- Compares the dictionary baseline with the Transformer.
+
+### Notebook 02 — Evaluation Improvements
+
+**File:** `02_evaluation_improvements.ipynb`
+
+This notebook:
+
+- Implements group-aware dataset splitting to reduce data leakage.
+- Checks for overlapping sentences between dataset partitions.
+- Implements a TF-IDF retrieval baseline.
+- Compares dictionary, TF-IDF, and Transformer translation methods.
+- Evaluates greedy decoding and beam search.
+- Calculates BLEU, chrF, and inference time.
+- Analyzes translation errors.
+
+### Notebook 03 — LSTM Baseline
+
+**File:** `03_lstm_baseline.ipynb`
+
+This notebook:
+
+- Prepares English–French sentence pairs for neural training.
+- Builds a bidirectional LSTM encoder.
+- Builds an LSTM decoder with an attention mechanism.
+- Trains the LSTM using supervised learning.
+- Monitors training and validation loss.
+- Generates French translations using the trained model.
+- Evaluates the LSTM on the same 500 validation sentences as Notebook 02.
+- Compares the LSTM with the dictionary, TF-IDF, and pretrained Transformer.
+- Saves evaluation metrics and translation predictions.
 
 ## Dataset
 
-The main dataset is an English-French parallel corpus from the TensorFlow-hosted `fra-eng.zip` archive.
+The project uses an English–French parallel corpus from the TensorFlow-hosted `fra-eng.zip` dataset.
 
-Dataset preparation includes:
+Each example contains an English sentence and its corresponding French translation.
 
-- Removing missing and empty sentence pairs
-- Removing duplicate English-French pairs
-- Keeping English sentences containing at most 15 words
-- Normalizing English and French text
-- Grouping related sentences
-- Creating group-separated training, validation, and test sets
+### Data Preprocessing
 
-### Dataset statistics
+The preprocessing steps include:
 
-| Partition | Sentence pairs |
+- Removing missing and empty sentence pairs.
+- Removing duplicate translation pairs.
+- Removing examples with English sentences longer than 15 words.
+- Normalizing text for overlap detection.
+- Grouping related sentence pairs to reduce data leakage.
+- Splitting the data into training, validation, and test partitions.
+
+### Dataset Statistics
+
+| Dataset Partition | Sentence Pairs |
 |---|---:|
-| Full cleaned dataset | 166,340 |
+| Cleaned dataset | 166,340 |
 | Training | 133,017 |
 | Validation | 16,616 |
 | Test | 16,707 |
 
-The fine-tuning experiments used 20,000 selected training pairs and 1,000 validation pairs.
+For the LSTM experiment, 50,000 training pairs were used.
 
-The dataset separation prevents exact and normalized overlaps according to the implemented grouping rules. It does not guarantee the absence of all semantic near-duplicates or overlap with historical pretrained-model data.
+The LSTM and Transformer were compared on the same 500 validation examples.
 
-## Notebook Structure
+## Translation Models
 
-### 01 — Data and Baseline
+### 1. Dictionary Baseline
 
-`01_data_and_baseline.ipynb`
+The dictionary baseline translates English sentences word by word using predefined English–French word mappings.
 
-- Loads and cleans the dataset
-- Implements a word-by-word dictionary translator
-- Loads the pretrained Transformer
-- Generates English-to-French translations
-- Evaluates BLEU and chrF
-- Compares sample translations
+It is computationally inexpensive but has important limitations:
 
-### 02 — Evaluation Improvements
+- Limited vocabulary
+- No contextual understanding
+- No grammatical modeling
+- Difficulty translating unknown words
 
-`02_evaluation_improvements.ipynb`
+This baseline provides a simple reference point.
 
-- Implements group-aware dataset splitting
-- Checks for exact and normalized overlap
-- Screens sampled data for near-duplicates
-- Implements TF-IDF retrieval translation
-- Compares dictionary, retrieval, and Transformer methods
-- Evaluates greedy decoding and beam search
-- Creates a systematic translation error-review dataset
+### 2. TF-IDF Retrieval Baseline
 
-### 03 — Fine-Tuning
+The TF-IDF baseline represents English sentences as numerical vectors.
 
-`03_finetuning.ipynb`
+For each input sentence, it searches for the most similar sentence in the training dataset using cosine similarity.
 
-- Prepares supervised training examples
-- Fine-tunes the pretrained Transformer for 100 optimizer steps
-- Continues training from the pilot checkpoint for one additional epoch
-- Uses validation loss to monitor training
-- Compares original, pilot, and extended models
-- Performs paired group bootstrap analysis
-- Supports final held-out testing and GPU benchmarking
+It returns the French translation associated with the closest English sentence.
 
-### 04 — External Evaluation
+The retrieval system indexed 92,892 unique English training sentences.
 
-`04_external_evaluation.ipynb`
+Unlike neural models, this approach retrieves existing translations instead of generating new ones.
 
-- Loads the FLORES-200 English-French devtest benchmark
-- Evaluates the original and extended fine-tuned Transformers
-- Calculates corpus BLEU and chrF
-- Compares translation predictions
-- Estimates paired bootstrap confidence intervals
+### 3. LSTM Encoder–Decoder with Attention
+
+An LSTM (Long Short-Term Memory) is a recurrent neural network designed to process sequential information.
+
+The translation model uses:
+
+- A bidirectional LSTM encoder to process English sentences.
+- An LSTM decoder to generate French sentences.
+- An attention mechanism to help the decoder focus on relevant encoder outputs.
+- Embedding layers to represent tokens as numerical vectors.
+
+The LSTM was trained from scratch using English–French sentence pairs.
+
+#### LSTM Training Configuration
+
+| Parameter | Value |
+|---|---|
+| Training examples | 50,000 |
+| Training epochs | 5 |
+| Best epoch | 4 |
+| Embedding dimension | 256 |
+| Batch size | 64 |
+| Vocabulary size | 6,000 subword entries per language |
+| Optimizer | AdamW |
+| Best validation-monitor loss | 1.7374 |
+| Trainable parameters | 7,466,352 |
+
+The training procedure includes teacher forcing, cross-entropy loss, gradient clipping, validation monitoring, and early stopping.
+
+### 4. Pretrained Transformer
+
+The Transformer model used in this project is:
+
+`Helsinki-NLP/opus-mt-en-fr`
+
+This is a pretrained MarianMT encoder–decoder Transformer designed for English-to-French translation.
+
+Unlike recurrent models, Transformers use attention mechanisms to model relationships between tokens without processing the entire sequence through recurrent hidden-state updates.
+
+The model was used without additional fine-tuning in the revised project.
 
 ## Evaluation Metrics
 
-### BLEU
+### BLEU — Bilingual Evaluation Understudy
 
-BLEU evaluates translation quality through token n-gram overlap with reference translations and includes a brevity penalty.
+BLEU evaluates translation quality by comparing word n-grams in generated translations with reference translations.
 
-### chrF
+Higher BLEU scores indicate greater agreement with reference translations.
 
-chrF evaluates character n-gram precision and recall against reference translations.
+BLEU also includes a brevity penalty for translations that are too short.
 
-Higher BLEU and chrF scores indicate greater reference similarity, but neither metric directly guarantees semantic correctness.
+### chrF — Character n-gram F-score
+
+chrF evaluates translation quality using character n-gram precision and recall.
+
+It is useful for identifying similarities between words and their morphological forms.
+
+Both BLEU and chrF evaluate reference overlap rather than directly measuring semantic correctness.
 
 ## Experimental Results
 
-### Original baseline experiment
+### Notebook 01 — Initial Baseline Comparison
 
-The first notebook evaluated 100 selected sentences.
+The first notebook evaluates 100 selected sentences.
 
 | Model | BLEU | chrF |
 |---|---:|---:|
-| Dictionary baseline | 0.54 | 15.52 |
+| Dictionary Baseline | 0.54 | 15.52 |
 | Pretrained Transformer | 57.97 | 71.93 |
 
-### Improved validation baseline
+The Transformer substantially outperformed the small dictionary baseline.
 
-The second notebook evaluated 500 validation sentences.
+### Final Model Comparison — 500 Validation Sentences
 
-| Method | BLEU | chrF |
+| Model | BLEU | chrF |
 |---|---:|---:|
-| Dictionary baseline | 0.66 | 16.14 |
-| TF-IDF retrieval | 18.39 | 37.74 |
-| Pretrained Transformer, greedy | 55.11 | 70.40 |
+| Dictionary Baseline | 0.66 | 16.14 |
+| TF-IDF Retrieval | 18.39 | 37.74 |
+| LSTM with Attention | 28.55 | 50.39 |
+| Pretrained Transformer | 55.11 | 70.40 |
 
-### Decoding comparison
+### Results Analysis
 
-| Method | BLEU | chrF |
+The dictionary baseline achieved the lowest translation-quality scores because of its very limited vocabulary and lack of contextual understanding.
+
+The TF-IDF retrieval baseline improved translation quality by retrieving similar sentence pairs from the training dataset.
+
+The LSTM with attention achieved higher BLEU and chrF scores than both traditional baselines, demonstrating its ability to learn translation patterns from parallel sentence data.
+
+The pretrained Transformer achieved the highest scores, outperforming the LSTM on the selected validation set.
+
+However, the Transformer was pretrained on a much larger amount of data, whereas the LSTM was trained from scratch on 50,000 examples.
+
+Therefore, this experiment does not isolate the effect of architecture alone.
+
+### Transformer Decoding Comparison
+
+| Decoding Method | BLEU | chrF |
 |---|---:|---:|
 | Greedy | 55.11 | 70.40 |
-| Beam search, 3 beams | 55.19 | 70.39 |
-| Beam search, 5 beams | 54.87 | 70.12 |
+| Beam Search 3 | 55.19 | 70.39 |
+| Beam Search 5 | 54.87 | 70.12 |
 
-Greedy decoding was selected because additional beam search provided little quality improvement while increasing inference time.
+Beam search did not produce a substantial improvement over greedy decoding on the selected validation sentences.
 
-### Fine-tuning validation results
+Greedy decoding was therefore used for the main Transformer comparison.
 
-All three model versions were evaluated on the same 500 validation sentences using greedy decoding.
-
-| Model | BLEU | chrF |
-|---|---:|---:|
-| Original pretrained | 55.11 | 70.40 |
-| Fine-tuned, 100 steps | 55.84 | 71.62 |
-| Extended fine-tuned | 56.56 | 72.71 |
-
-### Final held-out test
-
-Evaluation on 2,000 held-out sentence pairs:
-
-| Model | BLEU | chrF |
-|---|---:|---:|
-| Original pretrained | 52.22 | 68.03 |
-| Extended fine-tuned | 55.74 | 71.58 |
-
-The extended model improved BLEU by 3.52 points and chrF by 3.55 points on this test sample.
-
-### External FLORES-200 evaluation
-
-Evaluation on 1,012 English-French sentences from FLORES-200 devtest:
-
-| Model | BLEU | chrF |
-|---|---:|---:|
-| Original pretrained | 46.51 | 69.00 |
-| Extended fine-tuned | 46.86 | 69.23 |
-
-Observed improvements were approximately +0.35 BLEU and +0.23 chrF.
-
-Paired bootstrap analysis with 1,000 repetitions produced:
-
-| Metric | Improvement | 95% confidence interval |
-|---|---:|---|
-| BLEU | +0.351 | [-0.222, 0.960] |
-| chrF | +0.236 | [-0.092, 0.620] |
-
-Both intervals include zero. The external improvements are therefore statistically inconclusive under this bootstrap procedure.
-
-## Inference Performance
-
-A controlled GPU benchmark used 500 validation sentences, batch size 8, and three timed trials per model.
-
-| Model | Median GPU time | Sentences/second |
-|---|---:|---:|
-| Original pretrained | 8.72 s | 57.37 |
-| Fine-tuned, 100 steps | 8.78 s | 56.94 |
-| Extended fine-tuned | 9.08 s | 55.06 |
-
-Small inference-time differences should not be interpreted as a consistent hardware-speed advantage without additional repeated testing.
-
-## Technologies
+## Technologies Used
 
 - Python
+- Jupyter Notebook
 - Google Colab
 - PyTorch
 - Hugging Face Transformers
-- Hugging Face Datasets
 - SentencePiece
-- Pandas and NumPy
-- scikit-learn
+- Scikit-learn
+- Pandas
+- NumPy
 - SacreBLEU
 - Matplotlib
-- Google Drive for model checkpoints
-- GitHub for version control and results
+- GitHub
 
-## How to Run
+## How to Run the Project
 
-1. Open the required notebook in Google Colab.
-2. Install the dependencies using its first setup cells.
-3. Enable a T4 GPU for fine-tuning and GPU-based inference.
-4. Run the notebook cells in order.
-5. For Notebook 03 and Notebook 04, mount Google Drive when prompted.
-6. Ensure the saved fine-tuned checkpoints are available in the expected Google Drive paths.
+1. Open the notebooks in Google Colab or another compatible Jupyter environment.
+2. Install the required Python dependencies.
+3. Run Notebook 01 to reproduce the initial dataset and baseline experiment.
+4. Run Notebook 02 to reproduce the improved baselines and Transformer evaluation.
+5. Open Notebook 03 and enable a GPU runtime when available.
+6. Run the LSTM training and evaluation cells in order.
+7. Review the BLEU and chrF comparison results.
+8. Examine the generated translations and error examples.
 
-The checkpoints were stored under:
+Notebook 03 reproduces the dataset split and checks that its 500 evaluation examples match the saved predictions from Notebook 02.
 
-`/content/drive/MyDrive/NMT_Finetuning/`
+## Results Files
 
-The checkpoints are not included as model-weight files in this GitHub repository.
+The `results/` directory contains evaluation outputs.
 
-The evaluation results are available in `results/`.
+Important files include:
 
-## Limitations
+- `metrics.csv` — Initial dictionary and Transformer results.
+- `baseline_metrics.csv` — Dictionary and TF-IDF evaluation metrics.
+- `decoding_metrics.csv` — Transformer greedy and beam-search results.
+- `validation_predictions.csv` — Predictions on the shared validation sample.
+- `lstm_comparison_metrics.csv` — Final comparison metrics, including LSTM results.
+- `lstm_comparison_predictions.csv` — Translation examples and predictions from the compared methods.
 
-- The main corpus focuses on short English sentences.
-- The original pretrained model may have encountered some evaluation material during historical pretraining.
-- BLEU and chrF do not fully capture meaning, fluency, or factual correctness.
-- Qualitative translation judgments require careful human verification.
-- The external evaluation showed only small, statistically inconclusive improvements.
-- Results should not be generalized automatically to all domains or sentence lengths.
-- Trained checkpoints are stored separately from the repository.
+Older fine-tuning and external-evaluation CSVs, if retained in the repository, are historical artifacts and are not part of the revised experiment.
+
+## Project Limitations
+
+### Different Training Conditions
+
+The pretrained Transformer and the LSTM do not have equivalent training conditions.
+
+The Transformer benefits from extensive pretraining, while the LSTM was trained from random initialization on a smaller dataset.
+
+Consequently, the difference in performance cannot be attributed entirely to the network architecture.
+
+### Evaluation Dataset
+
+The final model comparison uses 500 validation sentences from the main dataset.
+
+These results do not necessarily represent performance on all real-world English–French translation tasks.
+
+### Evaluation Metrics
+
+BLEU and chrF do not fully capture translation meaning or fluency.
+
+Correct paraphrases may obtain lower scores because their wording differs from the reference translation.
+
+### Dictionary Limitations
+
+The original dictionary contains only 11 predefined translations.
+
+It is an introductory baseline rather than a competitive translation method.
 
 ## Conclusion
 
-The pretrained Transformer substantially outperformed the dictionary and TF-IDF retrieval baselines.
+This project compared four English-to-French translation approaches: dictionary-based translation, TF-IDF retrieval, an attention-based LSTM, and a pretrained Transformer.
 
-Fine-tuning improved BLEU and chrF on the original corpus's held-out test sample.
+The results demonstrated a clear improvement from the dictionary baseline to TF-IDF retrieval and then to the LSTM.
 
-On the external FLORES-200 benchmark, the fine-tuned model achieved slightly higher scores, but paired bootstrap confidence intervals included zero.
+The LSTM achieved **28.55 BLEU** and **50.39 chrF**, outperforming both simpler baselines.
 
-These experiments demonstrate the value of pretrained Transformers, systematic evaluation, fine-tuning, and independent cross-dataset testing for neural machine translation.
+The pretrained Transformer achieved the highest translation quality, with **55.11 BLEU** and **70.40 chrF** on the same 500 validation sentences.
 
+These findings demonstrate the advantages of neural sequence-to-sequence translation compared with simpler word-based and retrieval-based methods.
 
-
-### 05 — Translation Interface
-
-`05_translation_interface.ipynb`
-
-A simple interactive English-to-French translator built with Gradio.
-
-Features:
-- Enter an English sentence.
-- Translate it using the extended fine-tuned Transformer.
-- Display the French translation.
-- Display average generated-token confidence (%).
-
-The confidence indicator is derived from model token probabilities.
-It is not the probability that the translation is correct.
-
-To launch the interface:
-1. Open Notebook 05 in Google Colab.
-2. Enable a T4 GPU.
-3. Run the cells in order.
-4. Mount Google Drive when prompted.
-5. Open the Gradio link generated by the final cell.
-
-The fine-tuned checkpoint must be available in Google Drive at:
-`NMT_Finetuning/extended/checkpoint-1250`
-
+The comparison also highlights the importance of pretraining, dataset size, model architecture, and consistent evaluation procedures in Neural Machine Translation.
